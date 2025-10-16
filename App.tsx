@@ -8,7 +8,11 @@ import { View, Text } from 'react-native';
 // Tipagem do Drawer
 export type DrawerParamList = {
   Menu: undefined;
-  
+  Exercicios: undefined;
+  Vestibulares: undefined;
+  Professores: undefined;
+  Sobre_nos: undefined;
+  Relatorios: undefined;
   
 };
 
@@ -16,6 +20,7 @@ import LoginScreen from './screens/LoginScreen';
 import HomeScreen from './screens/HomeScreen';
 import CadastroScreen from './screens/CadastroScreen';
 import { auth } from './firebaseConfig';
+import ExerciciosScreen from './screens/ExerciciosScreen';
 
 // --- Tipagem ---
 type RootStackParamList = {
@@ -35,11 +40,18 @@ function HomeDrawer() {
   return (
     <Drawer.Navigator initialRouteName="Menu">
       <Drawer.Screen name="Menu" component={HomeScreen} options={{ title: 'Tela Inicial' }}/>
-      
-      
+      <Drawer.Screen name="Exercicios" component={ExerciciosScreen} options={{ title: 'Exercicios' }}/>
+      <Drawer.Screen name="Vestibulares" component={HomeScreen} options={{ title: 'Vestibulares' }}/>
+      <Drawer.Screen name="Professores" component={HomeScreen} options={{ title: 'Professores' }}/>
+      <Drawer.Screen name="Sobre_nos" component={HomeScreen} options={{ title: 'Sobre nos' }}/>
+      <Drawer.Screen name="Relatorios" component={HomeScreen} options={{ title: 'Relatorios' }}/>
     </Drawer.Navigator>
+    
+
   );
 }
+
+
 
 // --- App principal ---
 export default function App() {
