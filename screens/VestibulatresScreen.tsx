@@ -8,7 +8,7 @@ import { DrawerParamList } from '../App';
 
 type HomeScreenNavigationProp = DrawerNavigationProp<DrawerParamList, 'Menu'>;
 
-export default function SobreScreen() {
+export default function VestibularesScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
 
   const handleLogout = () => {
@@ -18,7 +18,7 @@ export default function SobreScreen() {
   return (
     <View style={styles.container}>
       
-      <Text style={styles.title}>Sobre nos</Text>
+      <Text style={styles.title}>Vestibulares</Text>
       <Text style={styles.emailText}>Logado como: {auth.currentUser?.email}</Text>
       <Button title="Sair" onPress={handleLogout} />
     </View>

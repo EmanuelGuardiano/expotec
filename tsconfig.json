@@ -1,5 +1,5 @@
 {
-  "extends": "expotec-main/expo/tsconfig.base",
+  "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true
   }
