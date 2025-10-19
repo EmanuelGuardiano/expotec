@@ -1,14 +1,5 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Alert,
-  Image,
-  Dimensions,
-} from 'react-native';
+import {View,Text,TouchableOpacity,StyleSheet,ScrollView,Alert,Image,Dimensions} from 'react-native';
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 import { DrawerNavigationProp } from '@react-navigation/drawer';
@@ -247,3 +238,4 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
 });
+
