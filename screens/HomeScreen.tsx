@@ -21,7 +21,7 @@ export default function HomeScreen() {
     <View style={styles.container}>
       {/* Imagem no topo */}
       <Image
-        source={require('../assets/corinthians.png')} // coloque sua imagem aqui
+        source={require('../assets/save.jpeg')} // coloque sua imagem aqui
         style={styles.headerImage}
         resizeMode="cover"
       />
@@ -30,7 +30,7 @@ export default function HomeScreen() {
       <View style={styles.content}>
         <Text style={styles.title}>Tela Principal</Text>
         <Text style={styles.emailText}>Logado como: {auth.currentUser?.email}</Text>
-        <Button title="Sair" onPress={handleLogout} />
+        
       </View>
     </View>
   );
