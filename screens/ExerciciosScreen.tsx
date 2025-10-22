@@ -4,18 +4,15 @@ import { signOut } from 'firebase/auth';
 import { auth } from '../firebaseConfig';
 import { useNavigation } from '@react-navigation/native';
 import { DrawerNavigationProp } from '@react-navigation/drawer';
-import { DrawerParamList } from '../App'; // Ajuste este import se necessário
+import { DrawerParamList } from '../App'; 
 
-// --- TIPAGEM ---
 type HomeScreenNavigationProp = DrawerNavigationProp<DrawerParamList, 'Menu'>;
 
-// Estrutura de um item de currículo (Área, Matéria, Tópico, etc.)
 interface ItemCurriculo {
   id: number;
   nome: string;
 }
 
-// Estrutura de uma Questão
 interface Questao {
   id: number;
   textoBase: string;
@@ -23,39 +20,42 @@ interface Questao {
   alternativas: Record<string, string>;
 }
 
-const API_BASE_URL = 'http://localhost:8080/api/exercicios';
+interface FeedbackUnico {
+  idQuestao: number;
+  correta: boolean;
+  respostaSugerida: string; // alternativa correta
+  feedbackDetalhado?: string;
+}
 
+const API_BASE_URL = 'http://localhost:9090/api/exercicios';
 const { width } = Dimensions.get('window');
 
 export default function ExerciciosScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
 
-  // --- ESTADOS PARA ARMAZENAR AS LISTAS VINDAS DA API ---
   const [areas, setAreas] = useState<ItemCurriculo[]>([]);
   const [disciplinas, setDisciplinas] = useState<ItemCurriculo[]>([]);
   const [topicos, setTopicos] = useState<ItemCurriculo[]>([]);
   const [subtopicos, setSubtopicos] = useState<ItemCurriculo[]>([]);
   const [questoes, setQuestoes] = useState<Questao[]>([]);
   const [respostasSelecionadas, setRespostasSelecionadas] = useState<Record<number, string>>({});
+  const [feedback, setFeedback] = useState<Record<number, FeedbackUnico>>({});
 
-  // --- ESTADOS PARA CONTROLAR O ITEM SELECIONADO EM CADA COLUNA ---
   const [selectedArea, setSelectedArea] = useState<ItemCurriculo | null>(null);
   const [selectedDisciplina, setSelectedDisciplina] = useState<ItemCurriculo | null>(null);
   const [selectedTopico, setSelectedTopico] = useState<ItemCurriculo | null>(null);
   const [selectedSubtopico, setSelectedSubtopico] = useState<ItemCurriculo | null>(null);
 
-  // --- ESTADOS DE CARREGAMENTO (LOADING) ---
   const [isLoadingAreas, setIsLoadingAreas] = useState(false);
   const [isLoadingDisciplinas, setIsLoadingDisciplinas] = useState(false);
   const [isLoadingTopicos, setIsLoadingTopicos] = useState(false);
   const [isLoadingSubtopicos, setIsLoadingSubtopicos] = useState(false);
 
-  // --- FUNÇÃO PARA SELECIONAR UMA ALTERNATIVA ---
   const handleSelectAlternativa = (questaoId: number, letra: string) => {
     setRespostasSelecionadas(prev => ({ ...prev, [questaoId]: letra }));
   };
 
-  // Efeito para buscar as ÁREAS quando o componente é montado
+  // --- Fetch Áreas ---
   useEffect(() => {
     const fetchAreas = async () => {
       setIsLoadingAreas(true);
@@ -63,145 +63,133 @@ export default function ExerciciosScreen() {
         const response = await fetch(`${API_BASE_URL}/areas`);
         const data: ItemCurriculo[] = await response.json();
         setAreas(data);
-      } catch (error) {
+      } catch {
         Alert.alert('Erro', 'Não foi possível carregar as áreas de conhecimento.');
-      } finally {
-        setIsLoadingAreas(false);
-      }
+      } finally { setIsLoadingAreas(false); }
     };
     fetchAreas();
   }, []);
 
-  // Efeito para buscar as DISCIPLINAS quando uma ÁREA é selecionada
+  // --- Fetch Disciplinas ---
   useEffect(() => {
     if (selectedArea) {
-      const fetchDisciplinas = async () => {
-        setIsLoadingDisciplinas(true);
-        setDisciplinas([]); // Limpa a lista anterior
-        try {
-          const response = await fetch(`${API_BASE_URL}/areas/${selectedArea.id}/materias`);
-          const data: ItemCurriculo[] = await response.json();
-          setDisciplinas(data);
-        } catch (error) {
-          Alert.alert('Erro', 'Não foi possível carregar as disciplinas.');
-        } finally {
-          setIsLoadingDisciplinas(false);
-        }
-      };
-      fetchDisciplinas();
+      setIsLoadingDisciplinas(true);
+      setDisciplinas([]);
+      fetch(`${API_BASE_URL}/areas/${selectedArea.id}/materias`)
+        .then(res => res.json())
+        .then(data => setDisciplinas(data))
+        .catch(() => Alert.alert('Erro', 'Não foi possível carregar as disciplinas.'))
+        .finally(() => setIsLoadingDisciplinas(false));
     }
   }, [selectedArea]);
 
-  // Efeito para buscar os TÓPICOS quando uma DISCIPLINA é selecionada
+  // --- Fetch Topicos ---
   useEffect(() => {
     if (selectedDisciplina) {
-      const fetchTopicos = async () => {
-        setIsLoadingTopicos(true);
-        setTopicos([]);
-        try {
-          const response = await fetch(`${API_BASE_URL}/materias/${selectedDisciplina.id}/topicos`);
-          const data: ItemCurriculo[] = await response.json();
-          setTopicos(data);
-        } catch (error) {
-          Alert.alert('Erro', 'Não foi possível carregar os tópicos.');
-        } finally {
-          setIsLoadingTopicos(false);
-        }
-      };
-      fetchTopicos();
+      setIsLoadingTopicos(true);
+      setTopicos([]);
+      fetch(`${API_BASE_URL}/materias/${selectedDisciplina.id}/topicos`)
+        .then(res => res.json())
+        .then(data => setTopicos(data))
+        .catch(() => Alert.alert('Erro', 'Não foi possível carregar os tópicos.'))
+        .finally(() => setIsLoadingTopicos(false));
     }
   }, [selectedDisciplina]);
 
-  // Efeito para buscar os SUBTÓPICOS quando um TÓPICO é selecionado
+  // --- Fetch Subtopicos ---
   useEffect(() => {
     if (selectedTopico) {
-      const fetchSubtopicos = async () => {
-        setIsLoadingSubtopicos(true);
-        setSubtopicos([]);
-        try {
-          const response = await fetch(`${API_BASE_URL}/topicos/${selectedTopico.id}/subtopicos`);
-          const data: ItemCurriculo[] = await response.json();
-          setSubtopicos(data);
-        } catch (error) {
-          Alert.alert('Erro', 'Não foi possível carregar os subtópicos.');
-        } finally {
-          setIsLoadingSubtopicos(false);
-        }
-      };
-      fetchSubtopicos();
+      setIsLoadingSubtopicos(true);
+      setSubtopicos([]);
+      fetch(`${API_BASE_URL}/topicos/${selectedTopico.id}/subtopicos`)
+        .then(res => res.json())
+        .then(data => setSubtopicos(data))
+        .catch(() => Alert.alert('Erro', 'Não foi possível carregar os subtópicos.'))
+        .finally(() => setIsLoadingSubtopicos(false));
     }
   }, [selectedTopico]);
 
-  // --- FUNÇÕES DE CONTROLE ---
   const handleSelectArea = (area: ItemCurriculo) => {
     setSelectedArea(area);
-    setSelectedDisciplina(null);
-    setSelectedTopico(null);
-    setSelectedSubtopico(null);
-    setDisciplinas([]);
-    setTopicos([]);
-    setSubtopicos([]);
-    setQuestoes([]);
-    setRespostasSelecionadas({});
+    setSelectedDisciplina(null); setSelectedTopico(null); setSelectedSubtopico(null);
+    setDisciplinas([]); setTopicos([]); setSubtopicos([]); setQuestoes([]); setRespostasSelecionadas({}); setFeedback({});
   };
 
   const handleSelectDisciplina = (disciplina: ItemCurriculo) => {
     setSelectedDisciplina(disciplina);
-    setSelectedTopico(null);
-    setSelectedSubtopico(null);
-    setTopicos([]);
-    setSubtopicos([]);
-    setQuestoes([]);
-    setRespostasSelecionadas({});
+    setSelectedTopico(null); setSelectedSubtopico(null);
+    setTopicos([]); setSubtopicos([]); setQuestoes([]); setRespostasSelecionadas({}); setFeedback({});
   };
 
   const handleSelectTopico = (topico: ItemCurriculo) => {
     setSelectedTopico(topico);
     setSelectedSubtopico(null);
-    setSubtopicos([]);
-    setQuestoes([]);
-    setRespostasSelecionadas({});
+    setSubtopicos([]); setQuestoes([]); setRespostasSelecionadas({}); setFeedback({});
   };
 
   const handleGerarQuestoes = async () => {
     if (!selectedArea || !selectedDisciplina || !selectedTopico || !selectedSubtopico) {
-      Alert.alert('Seleção Incompleta', 'Por favor, selecione todas as quatro opções para gerar os exercícios.');
+      Alert.alert('Seleção Incompleta', 'Selecione todas as quatro opções.');
       return;
     }
 
-    const url = `${API_BASE_URL}/${selectedArea.id}/${selectedDisciplina.id}/${selectedTopico.id}/${selectedSubtopico.id}/gerar`;
-
     try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error('Falha ao buscar os exercícios. Verifique o servidor.');
-      }
-      const data = await response.json();
+      const res = await fetch(`${API_BASE_URL}/${selectedArea.id}/${selectedDisciplina.id}/${selectedTopico.id}/${selectedSubtopico.id}/gerar`);
+      if (!res.ok) throw new Error('Falha ao buscar exercícios');
+      const data = await res.json();
       setQuestoes(data.questoes || []);
-      setRespostasSelecionadas({}); // Limpa respostas anteriores
-    } catch (error) {
-      console.error("Erro ao buscar exercícios:", error);
-      Alert.alert('Erro', 'Não foi possível carregar os exercícios. Tente novamente mais tarde.');
+      setRespostasSelecionadas({});
+      setFeedback({});
+    } catch {
+      Alert.alert('Erro', 'Não foi possível gerar questões.');
     }
   };
 
   const limparSelecaoCompleta = () => {
-    setSelectedArea(null);
-    setSelectedDisciplina(null);
-    setSelectedTopico(null);
-    setSelectedSubtopico(null);
-    setDisciplinas([]);
-    setTopicos([]);
-    setSubtopicos([]);
-    setQuestoes([]);
-    setRespostasSelecionadas({});
+    setSelectedArea(null); setSelectedDisciplina(null); setSelectedTopico(null); setSelectedSubtopico(null);
+    setDisciplinas([]); setTopicos([]); setSubtopicos([]); setQuestoes([]); setRespostasSelecionadas({}); setFeedback({});
   };
 
-  const handleLogout = () => {
-    signOut(auth).catch(error => console.log('Erro no Logout:', error));
+  const handleLogout = () => signOut(auth).catch(err => console.log(err));
+
+  // --- NOVO: Corrigir questões e mostrar resposta correta ---
+  const handleCorrigirQuestoes = async () => {
+    if (questoes.length === 0) {
+      Alert.alert('Nenhuma questão', 'Gere as questões antes de corrigir.');
+      return;
+    }
+
+    const respostas = Object.entries(respostasSelecionadas).map(([questaoId, resposta]) => ({
+      idQuestao: Number(questaoId),
+      resposta
+    }));
+
+    if (respostas.length === 0) {
+      Alert.alert('Nenhuma resposta', 'Selecione ao menos uma alternativa.');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/corrigir/unica`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ respostas })
+      });
+
+      if (!res.ok) throw new Error('Erro na correção');
+
+      const data: FeedbackUnico[] = await res.json();
+      const novoFeedback: Record<number, FeedbackUnico> = {};
+      data.forEach(f => { novoFeedback[f.idQuestao] = f; });
+      setFeedback(novoFeedback);
+
+      Alert.alert('Correção concluída', 'As respostas corretas agora estão destacadas.');
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Erro', 'Não foi possível corrigir as questões.');
+    }
   };
 
-  // --- RENDERIZAÇÃO ---
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
       <Image source={require('../assets/corinthians.png')} style={styles.headerImage} resizeMode="cover" />
@@ -209,7 +197,7 @@ export default function ExerciciosScreen() {
       <Text style={styles.emailText}>Logado como: {auth.currentUser?.email}</Text>
 
       <View style={styles.row}>
-        {/* Coluna de Áreas */}
+        {/* Áreas */}
         <View style={styles.column}>
           <Text style={styles.columnTitle}>Área de Conhecimento</Text>
           {isLoadingAreas ? <ActivityIndicator size="large" color="#007bff" /> : (
@@ -221,7 +209,7 @@ export default function ExerciciosScreen() {
           )}
         </View>
 
-        {/* Coluna de Disciplinas */}
+        {/* Disciplinas */}
         <View style={styles.column}>
           <Text style={styles.columnTitle}>Disciplina</Text>
           {isLoadingDisciplinas ? <ActivityIndicator size="large" color="#007bff" /> : (
@@ -235,7 +223,7 @@ export default function ExerciciosScreen() {
           )}
         </View>
 
-        {/* Coluna de Tópicos */}
+        {/* Tópicos */}
         <View style={styles.column}>
           <Text style={styles.columnTitle}>Tópico</Text>
           {isLoadingTopicos ? <ActivityIndicator size="large" color="#007bff" /> : (
@@ -249,7 +237,7 @@ export default function ExerciciosScreen() {
           )}
         </View>
 
-        {/* Coluna de Subtópicos */}
+        {/* Subtópicos */}
         <View style={styles.column}>
           <Text style={styles.columnTitle}>Subtópico</Text>
           {isLoadingSubtopicos ? <ActivityIndicator size="large" color="#007bff" /> : (
@@ -289,13 +277,27 @@ export default function ExerciciosScreen() {
             <View style={styles.alternativasContainer}>
               {Object.entries(questao.alternativas).map(([letra, texto]) => {
                 const selecionada = respostasSelecionadas[questao.id] === letra;
+                const correta = feedback[questao.id]?.respostaSugerida === letra;
                 return (
                   <TouchableOpacity
                     key={letra}
-                    style={[styles.alternativaBotao, selecionada && styles.alternativaSelecionada]}
+                    style={[
+                      styles.alternativaBotao,
+                      selecionada && styles.alternativaSelecionada,
+                      feedback[questao.id] && correta && styles.alternativaCorreta,
+                      feedback[questao.id] && selecionada && !correta && styles.alternativaIncorreta,
+                    ]}
                     onPress={() => handleSelectAlternativa(questao.id, letra)}
+                    disabled={!!feedback[questao.id]} // bloqueia após correção
                   >
-                    <Text style={[styles.alternativaTexto, selecionada && styles.alternativaTextoSelecionada]}>
+                    <Text
+                      style={[
+                        styles.alternativaTexto,
+                        selecionada && styles.alternativaTextoSelecionada,
+                        feedback[questao.id] && correta && styles.alternativaTextoCorreta,
+                        feedback[questao.id] && selecionada && !correta && styles.alternativaTextoIncorreta,
+                      ]}
+                    >
                       <Text style={{ fontWeight: 'bold' }}>{letra}) </Text>
                       {texto}
                     </Text>
@@ -303,39 +305,34 @@ export default function ExerciciosScreen() {
                 );
               })}
             </View>
+
+            {feedback[questao.id] && !feedback[questao.id].correta && (
+              <Text style={styles.feedbackDetalhe}>
+                Resposta correta: {feedback[questao.id].respostaSugerida}
+                {feedback[questao.id].feedbackDetalhado ? `\nDetalhes: ${feedback[questao.id].feedbackDetalhado}` : ''}
+              </Text>
+            )}
           </View>
         ))}
+
+        <TouchableOpacity style={[styles.actionButton, { marginTop: 20 }]} onPress={handleCorrigirQuestoes}>
+          <Text style={styles.actionButtonText}>Corrigir Questões</Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
 }
 
-// --- ESTILOS ---
+// --- ESTILOS ADICIONAIS PARA CORREÇÃO ---
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f5f5f5', padding: 16 },
   headerImage: { width: '100%', height: 150, alignSelf: 'center', marginBottom: 10, borderRadius: 8 },
   subtitle: { textAlign: 'center', fontSize: 18, fontWeight: 'bold', color: '#333', marginVertical: 8 },
   emailText: { textAlign: 'center', fontSize: 14, color: '#666', marginBottom: 15 },
   row: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-  column: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 10,
-    width: '48%',
-    marginVertical: 8,
-    minHeight: 150,
-  },
+  column: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 10, width: '48%', marginVertical: 8, minHeight: 150 },
   columnTitle: { textAlign: 'center', fontWeight: 'bold', color: '#444', marginBottom: 10 },
-  button: {
-    backgroundColor: '#e9e9e9',
-    borderRadius: 6,
-    padding: 10,
-    marginVertical: 4,
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
+  button: { backgroundColor: '#e9e9e9', borderRadius: 6, padding: 10, marginVertical: 4, borderWidth: 1, borderColor: 'transparent' },
   buttonSelected: { backgroundColor: '#007bff', borderColor: '#0056b3' },
   buttonText: { textAlign: 'center', color: '#333' },
   buttonTextSelected: { color: '#fff', fontWeight: 'bold' },
@@ -344,39 +341,22 @@ const styles = StyleSheet.create({
   summaryTitle: { fontWeight: 'bold', fontSize: 16, color: '#333' },
   summaryText: { marginVertical: 8, textAlign: 'center', color: '#555' },
   buttonRow: { flexDirection: 'row', marginTop: 10, gap: 10 },
-  actionButton: {
-    backgroundColor: '#28a745',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-  },
+  actionButton: { backgroundColor: '#28a745', paddingVertical: 12, paddingHorizontal: 20, borderRadius: 8 },
   clearButton: { backgroundColor: '#ffc107' },
   actionButtonText: { color: '#fff', fontWeight: 'bold', textAlign: 'center' },
   questoesContainer: { marginTop: 20 },
-  questaoCard: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 15,
-    marginBottom: 15,
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
+  questaoCard: { backgroundColor: '#fff', borderRadius: 8, padding: 15, marginBottom: 15, borderWidth: 1, borderColor: '#ddd' },
   questaoHeader: { fontSize: 16, fontWeight: 'bold', marginBottom: 10, color: '#007bff' },
   textoBase: { fontStyle: 'italic', color: '#555', marginBottom: 10, lineHeight: 20 },
   enunciado: { fontWeight: '600', color: '#333', marginBottom: 12, lineHeight: 22 },
   alternativasContainer: { marginLeft: 10 },
-  alternativaBotao: {
-    padding: 10,
-    marginVertical: 4,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    backgroundColor: '#f9f9f9',
-  },
-  alternativaSelecionada: {
-    backgroundColor: '#007bff',
-    borderColor: '#0056b3',
-  },
+  alternativaBotao: { padding: 10, marginVertical: 4, borderRadius: 6, borderWidth: 1, borderColor: '#ccc', backgroundColor: '#f9f9f9' },
+  alternativaSelecionada: { backgroundColor: '#007bff', borderColor: '#0056b3' },
   alternativaTexto: { color: '#333' },
   alternativaTextoSelecionada: { color: '#fff', fontWeight: 'bold' },
+  alternativaCorreta: { backgroundColor: '#28a745', borderColor: '#1c7430' },
+  alternativaIncorreta: { backgroundColor: '#dc3545', borderColor: '#a71d2a' },
+  alternativaTextoCorreta: { color: '#fff', fontWeight: 'bold' },
+  alternativaTextoIncorreta: { color: '#fff', fontWeight: 'bold' },
+  feedbackDetalhe: { marginTop: 5, fontStyle: 'italic', color: '#555' },
 });

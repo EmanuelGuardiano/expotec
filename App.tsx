@@ -15,6 +15,7 @@ export type DrawerParamList = {
   Sobre_nos: undefined;
   Relatorios: undefined;
   Sair: undefined;
+  Resumo: undefined;
   
 };
 
@@ -26,7 +27,7 @@ import ExerciciosScreen from './screens/ExerciciosScreen';
 import VestibularesScreen from './screens/VestibulatresScreen';
 import ProfessoresScreen from './screens/ProfessoresScreen';
 import SobreScreen from './screens/SobreScreen';
-import ResumoScreen from './screens/RelatoriosScreen';
+import ResumoScreen from './screens/ResumoScreen';
 import RelatoriosScreen from './screens/RelatoriosScreen';
 
 // --- Tipagem ---
@@ -55,6 +56,7 @@ function HomeDrawer() {
       <Drawer.Screen name="Professores" component={ProfessoresScreen} options={{ title: 'Professores' }} />
       <Drawer.Screen name="Sobre_nos" component={SobreScreen} options={{ title: 'Sobre Nós' }} />
       <Drawer.Screen name="Relatorios" component={RelatoriosScreen} options={{ title: 'Relatórios' }} />
+      <Drawer.Screen name="Resumo" component={ResumoScreen} options={{ title: 'Resumos' }} />
     </Drawer.Navigator>
   );
 }

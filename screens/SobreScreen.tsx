@@ -45,7 +45,6 @@ export default function SobreScreen() {
       {/* --- Seção de Professores --- */}
       <Text style={styles.sectionTitle}>Professores</Text>
       <View style={styles.grid}>
-        {/* O 'player' aqui agora é explicitamente tipado pela iteração do array Player[] */}
         {professores.map((player, index) => (
           <Card key={`prof-${index}`} player={player} />
         ))}
@@ -54,7 +53,6 @@ export default function SobreScreen() {
       {/* --- Seção de Alunos --- */}
       <Text style={styles.sectionTitle}>Alunos</Text>
       <View style={styles.grid}>
-        {/* O 'player' aqui agora é explicitamente tipado pela iteração do array Player[] */}
         {alunos.map((player, index) => (
           <Card key={`aluno-${index}`} player={player} />
         ))}
@@ -103,7 +101,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    paddingHorizontal: 8,
+    paddingHorizontal: 8, 
   },
   card: {
     width: 150,
@@ -117,6 +115,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 5,
     elevation: 6,
+    margin: 4,
   },
   image: {
     width: '100%', 
