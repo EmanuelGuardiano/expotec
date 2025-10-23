@@ -152,7 +152,7 @@ export default function ResumoScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <Image source={require('../assets/corinthians.png')} style={styles.headerImage} />
+      <Image source={require('../assets/resumos.jpeg')} style={styles.headerImage} />
       <Text style={styles.subtitle}>Resumo automático do conteúdo de estudo</Text>
       <Text style={styles.emailText}>Logado como: {auth.currentUser?.email}</Text>
 

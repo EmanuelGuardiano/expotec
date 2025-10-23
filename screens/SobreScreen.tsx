@@ -8,14 +8,14 @@ interface Player {
 }
 
 const players: Player[] = [
-  { name: 'Prof. Alessandro', img: require('../assets/save.jpeg'), role: 'professor' },
-  { name: 'Prof. Raphael', img: require('../assets/save.jpeg'), role: 'professor' },
-  { name: 'Prof. Leandro', img: require('../assets/save.jpeg'), role: 'professor' },
+  { name: 'Prof. Alessandro', img: require('../assets/prof.alessandro.jpeg'), role: 'professor' },
+  { name: 'Prof. Raphael', img: require('../assets/prof.raphael.jpeg'), role: 'professor' },
+  { name: 'Prof. Leandro', img: require('../assets/prof.leandro.jpg'), role: 'professor' },
   { name: 'Prof. Renan', img: require('../assets/save.jpeg'), role: 'professor' },
-  { name: 'Pedro Henrique', img: require('../assets/save.jpeg'), role: 'aluno' },
-  { name: 'Emanuel Santos', img: require('../assets/save.jpeg'), role: 'aluno' },
-  { name: 'Vinicius Rodrigues', img: require('../assets/save.jpeg'), role: 'aluno' },
-  { name: 'Thiago Alves', img: require('../assets/save.jpeg'), role: 'aluno' },
+  { name: 'Pedro Henrique', img: require('../assets/pedro.jpeg'), role: 'aluno' },
+  { name: 'Emanuel Santos', img: require('../assets/emanuel.jpeg'), role: 'aluno' },
+  { name: 'Vinicius Rodrigues', img: require('../assets/vinicius.jpeg'), role: 'aluno' },
+  { name: 'Thiago Alves', img: require('../assets/thiago.jpeg'), role: 'aluno' },
   { name: 'Miguel', img: require('../assets/save.jpeg'), role: 'aluno' },
   { name: 'Julio Cessar', img: require('../assets/save.jpeg'), role: 'aluno' },
   { name: 'Lucas', img: require('../assets/save.jpeg'), role: 'aluno' },

@@ -192,7 +192,7 @@ export default function ExerciciosScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
-      <Image source={require('../assets/corinthians.png')} style={styles.headerImage} resizeMode="cover" />
+      <Image source={require('../assets/exercicios.jpeg')} style={styles.headerImage} resizeMode="cover" />
       <Text style={styles.subtitle}>Gere aqui exercícios sobre o tema que você quiser</Text>
       <Text style={styles.emailText}>Logado como: {auth.currentUser?.email}</Text>
 
