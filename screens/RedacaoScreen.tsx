@@ -5,6 +5,7 @@ import { auth } from '../firebaseConfig';
 import { useNavigation } from '@react-navigation/native';
 import { DrawerNavigationProp } from '@react-navigation/drawer';
 import { DrawerParamList } from '../App';
+import Markdown from 'react-native-markdown-display'; // 🆕 Import do renderizador de Markdown
 
 type HomeScreenNavigationProp = DrawerNavigationProp<DrawerParamList, 'Menu'>;
 
@@ -17,116 +18,7 @@ interface ResumoResponse {
   resumo: string;
 }
 
-const API_BASE_URL = 'http://localhost:8080/api/resumo'; // ATENÇÃO: veja notas sobre emulador abaixo
-
-// -------------------- Renderizador simples de Markdown (sem dependências) --------------------
-function SimpleMarkdownRenderer({ content }: { content: string }) {
-  // divide por linhas e agrupa em blocos simples
-  const lines = content.split(/\r?\n/);
-
-  // converte linhas em blocos (parágrafo, heading, list)
-  const blocks: Array<{ type: string; text?: string; items?: string[] }> = [];
-  let currentList: string[] | null = null;
-
-  for (let rawLine of lines) {
-    const line = rawLine.trim();
-    if (line.length === 0) {
-      if (currentList) {
-        blocks.push({ type: 'list', items: currentList });
-        currentList = null;
-      }
-      continue;
-    }
-
-    // heading level 1/2/3 (##, ###)
-    if (/^#{2}\s+/.test(line)) {
-      if (currentList) { blocks.push({ type: 'list', items: currentList }); currentList = null; }
-      blocks.push({ type: 'h2', text: line.replace(/^#{2}\s+/, '') });
-    } else if (/^#{3}\s+/.test(line)) {
-      if (currentList) { blocks.push({ type: 'list', items: currentList }); currentList = null; }
-      blocks.push({ type: 'h3', text: line.replace(/^#{3}\s+/, '') });
-    } else if (/^[-*]\s+/.test(line)) {
-      // lista
-      const item = line.replace(/^[-*]\s+/, '');
-      if (!currentList) currentList = [];
-      currentList.push(item);
-    } else if (/^---+$/.test(line)) {
-      if (currentList) { blocks.push({ type: 'list', items: currentList }); currentList = null; }
-      blocks.push({ type: 'hr' });
-    } else {
-      // parágrafo
-      if (currentList) { blocks.push({ type: 'list', items: currentList }); currentList = null; }
-      blocks.push({ type: 'p', text: line });
-    }
-  }
-
-  if (currentList) blocks.push({ type: 'list', items: currentList });
-
-  // função para renderizar negrito **text**
-  const renderInline = (text = '') => {
-    // separa por negrito: **texto**
-    const parts: Array<{ text: string; bold?: boolean }> = [];
-    const regex = /\*\*(.+?)\*\*/g;
-    let lastIndex = 0;
-    let m;
-    while ((m = regex.exec(text)) !== null) {
-      const idx = m.index;
-      if (idx > lastIndex) parts.push({ text: text.slice(lastIndex, idx) });
-      parts.push({ text: m[1], bold: true });
-      lastIndex = idx + m[0].length;
-    }
-    if (lastIndex < text.length) parts.push({ text: text.slice(lastIndex) });
-
-    return parts.map((p, i) => (
-      <Text key={i} style={p.bold ? styles.mdBold : styles.mdText}>{p.text}</Text>
-    ));
-  };
-
-  return (
-    <View>
-      {blocks.map((b, i) => {
-        if (b.type === 'h2') {
-          return (
-            <Text key={i} style={styles.mdH2}>
-              {renderInline(b.text)}
-            </Text>
-          );
-        }
-        if (b.type === 'h3') {
-          return (
-            <Text key={i} style={styles.mdH3}>
-              {renderInline(b.text)}
-            </Text>
-          );
-        }
-        if (b.type === 'p') {
-          return (
-            <Text key={i} style={styles.mdParagraph}>
-              {renderInline(b.text)}
-            </Text>
-          );
-        }
-        if (b.type === 'list') {
-          return (
-            <View key={i} style={styles.mdList}>
-              {b.items?.map((it, idx) => (
-                <View key={idx} style={styles.mdListItem}>
-                  <Text style={styles.mdBullet}>•</Text>
-                  <Text style={styles.mdListText}>{renderInline(it)}</Text>
-                </View>
-              ))}
-            </View>
-          );
-        }
-        if (b.type === 'hr') {
-          return <View key={i} style={styles.mdHr} />;
-        }
-        return null;
-      })}
-    </View>
-  );
-}
-// --------------------------------------------------------------------------------------------
+const API_BASE_URL = 'http://localhost:8080/api/resumo';
 
 export default function ResumoScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
@@ -157,8 +49,7 @@ export default function ResumoScreen() {
         const res = await fetch(`${API_BASE_URL}/areas`);
         const data: ItemCurriculo[] = await res.json();
         setAreas(data);
-      } catch (err) {
-        console.error(err);
+      } catch {
         Alert.alert('Erro', 'Falha ao carregar áreas.');
       } finally {
         setLoadingAreas(false);
@@ -177,8 +68,7 @@ export default function ResumoScreen() {
         const res = await fetch(`${API_BASE_URL}/areas/${selectedArea.id}/materias`);
         const data: ItemCurriculo[] = await res.json();
         setDisciplinas(data);
-      } catch (err) {
-        console.error(err);
+      } catch {
         Alert.alert('Erro', 'Falha ao carregar disciplinas.');
       } finally {
         setLoadingDisciplinas(false);
@@ -197,8 +87,7 @@ export default function ResumoScreen() {
         const res = await fetch(`${API_BASE_URL}/materias/${selectedDisciplina.id}/topicos`);
         const data: ItemCurriculo[] = await res.json();
         setTopicos(data);
-      } catch (err) {
-        console.error(err);
+      } catch {
         Alert.alert('Erro', 'Falha ao carregar tópicos.');
       } finally {
         setLoadingTopicos(false);
@@ -217,8 +106,7 @@ export default function ResumoScreen() {
         const res = await fetch(`${API_BASE_URL}/topicos/${selectedTopico.id}/subtopicos`);
         const data: ItemCurriculo[] = await res.json();
         setSubtopicos(data);
-      } catch (err) {
-        console.error(err);
+      } catch {
         Alert.alert('Erro', 'Falha ao carregar subtópicos.');
       } finally {
         setLoadingSubtopicos(false);
@@ -238,8 +126,7 @@ export default function ResumoScreen() {
         if (!res.ok) throw new Error('Erro ao buscar resumo');
         const data: ResumoResponse = await res.json();
         setResumo(data.resumo);
-      } catch (err) {
-        console.error(err);
+      } catch {
         Alert.alert('Erro', 'Não foi possível gerar o resumo.');
       } finally {
         setLoadingResumo(false);
@@ -328,7 +215,7 @@ export default function ResumoScreen() {
       {/* RESUMO */}
       <View style={[styles.resumoContainer, { borderLeftWidth: 4, borderLeftColor: '#007bff' }]}>
         {loadingResumo && <ActivityIndicator size="large" color="#007bff" />}
-        {resumo && <SimpleMarkdownRenderer content={resumo} />}
+        {resumo && <Markdown style={markdownStyles}>{resumo}</Markdown>}
       </View>
 
       <TouchableOpacity style={[styles.actionButton, { marginTop: 20 }]} onPress={limparSelecao}>
@@ -353,15 +240,17 @@ const styles = StyleSheet.create({
   resumoContainer: { marginTop: 20, backgroundColor: '#fff', padding: 15, borderRadius: 8 },
   actionButton: { backgroundColor: '#28a745', paddingVertical: 12, paddingHorizontal: 20, borderRadius: 8, alignSelf: 'center' },
   actionButtonText: { color: '#fff', fontWeight: 'bold', textAlign: 'center' },
-
-  mdH2: { fontSize: 20, fontWeight: '700', color: '#007bff', marginBottom: 8 },
-  mdH3: { fontSize: 18, fontWeight: '700', color: '#0056b3', marginTop: 10, marginBottom: 6 },
-  mdParagraph: { fontSize: 16, color: '#333', lineHeight: 22, marginBottom: 8 },
-  mdText: { fontSize: 16, color: '#333' },
-  mdBold: { fontSize: 16, color: '#000', fontWeight: '700' },
-  mdList: { marginBottom: 8 },
-  mdListItem: { flexDirection: 'row', alignItems: 'flex-start', marginVertical: 4 },
-  mdBullet: { width: 16, fontSize: 18, lineHeight: 22, color: '#333', textAlign: 'center' },
-  mdListText: { flex: 1, fontSize: 16, color: '#333', lineHeight: 22 },
-  mdHr: { height: 1, backgroundColor: '#e0e0e0', marginVertical: 10 },
 });
+
+const markdownStyles = {
+  body: { color: '#333', fontSize: 16, lineHeight: 24 },
+  heading1: { fontSize: 22, fontWeight: 'bold', color: '#007bff', marginBottom: 10 },
+  heading2: { fontSize: 20, fontWeight: 'bold', color: '#0056b3', marginTop: 15 },
+  heading3: { fontSize: 18, fontWeight: 'bold', color: '#333', marginTop: 12 },
+  strong: { fontWeight: 'bold', color: '#000' },
+  paragraph: { marginBottom: 10 },
+  list_item: { marginVertical: 4 },
+  bullet_list: { paddingLeft: 20 },
+  ordered_list: { paddingLeft: 20 },
+  hr: { borderBottomWidth: 1, borderColor: '#ccc', marginVertical: 10 },
+};

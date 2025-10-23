@@ -16,6 +16,7 @@ export type DrawerParamList = {
   Relatorios: undefined;
   Sair: undefined;
   Resumo: undefined;
+  Redacao: undefined;
   
 };
 
@@ -29,6 +30,7 @@ import ProfessoresScreen from './screens/ProfessoresScreen';
 import SobreScreen from './screens/SobreScreen';
 import ResumoScreen from './screens/ResumoScreen';
 import RelatoriosScreen from './screens/RelatoriosScreen';
+import RedacaoScreen from './screens/RedacaoScreen';
 
 // --- Tipagem ---
 type RootStackParamList = {
@@ -57,6 +59,7 @@ function HomeDrawer() {
       <Drawer.Screen name="Sobre_nos" component={SobreScreen} options={{ title: 'Sobre Nós' }} />
       <Drawer.Screen name="Relatorios" component={RelatoriosScreen} options={{ title: 'Relatórios' }} />
       <Drawer.Screen name="Resumo" component={ResumoScreen} options={{ title: 'Resumos' }} />
+      <Drawer.Screen name="Redacao" component={ResumoScreen} options={{ title: 'Redação' }} />
     </Drawer.Navigator>
   );
 }

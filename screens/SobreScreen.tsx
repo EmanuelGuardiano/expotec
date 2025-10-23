@@ -17,9 +17,9 @@ const players: Player[] = [
   { name: 'Vinicius Rodrigues', img: require('../assets/vinicius.jpeg'), role: 'aluno' },
   { name: 'Thiago Alves', img: require('../assets/thiago.jpeg'), role: 'aluno' },
   { name: 'Miguel', img: require('../assets/save.jpeg'), role: 'aluno' },
-  { name: 'Julio Cessar', img: require('../assets/save.jpeg'), role: 'aluno' },
+  { name: 'Julio Cesar', img: require('../assets/save.jpeg'), role: 'aluno' },
   { name: 'Lucas', img: require('../assets/save.jpeg'), role: 'aluno' },
-  { name: 'Raphael Ramires', img: require('../assets/save.jpeg'), role: 'aluno' },
+  { name: 'Rafael Ramires', img: require('../assets/save.jpeg'), role: 'aluno' },
 ];
 
 const professores: Player[] = players.filter(p => p.role === 'professor');
